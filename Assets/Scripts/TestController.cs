@@ -9,7 +9,11 @@ public class TestController : MonoBehaviour
 
     //x is number of targets, y is visual feedback 1 for feedback 0 for no feedback, z is offset
     [SerializeField]
-    List<Vector3> trainingSchedule;
+    List<Vector3> standardTrainingSchedule;
+    [SerializeField]
+    List<Vector3> mondayTrainingSchedule;
+    [SerializeField]
+    List<Vector3> demoTrainingSchedule;
 
     [SerializeField]
     private Vector3 controllerOffSet = new Vector3(.1f, 0f, 0f);
@@ -29,14 +33,37 @@ public class TestController : MonoBehaviour
 
     private Coroutine currentTask;
 
+    private Coroutine trainingSession;
+
     void Start()
     {
-        currentTask = StartCoroutine(RunPrismTraining());
+        RunDemoTraining();
     }
 
-    IEnumerator RunPrismTraining()
+    public void RunDemoTraining()
     {
-        foreach (Vector3 set in trainingSchedule)
+        if (trainingSession != null)
+            return;
+        trainingSession = StartCoroutine(RunPrismTraining(demoTrainingSchedule));
+    }
+
+    public void RunStandardTraining()
+    {
+        if (trainingSession != null)
+            return;
+        trainingSession = StartCoroutine(RunPrismTraining(standardTrainingSchedule));
+    }
+
+    public void RunMondayTraining()
+    {
+        if (trainingSession != null)
+            return;
+        trainingSession = StartCoroutine(RunPrismTraining(mondayTrainingSchedule));
+    }
+
+    IEnumerator RunPrismTraining(List<Vector3> trainingSession)
+    {
+        foreach (Vector3 set in trainingSession)
         {
             FillTargetOrder((int)set.x);
             ChangeOffSet(new Vector3(set.z, 0, 0));
@@ -46,6 +73,7 @@ public class TestController : MonoBehaviour
             StartCoroutine(targetController.SetDone(timeBetweenSets));
             yield return new WaitForSeconds(timeBetweenSets + .1f);
         }
+        trainingSession = null;
     }
 
     private void FillTargetOrder(int numberOffTargets)
