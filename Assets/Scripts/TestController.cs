@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR;
+using UnityEngine.XR.Interaction.Toolkit;
 
 public class TestController : MonoBehaviour
 {
@@ -33,17 +34,34 @@ public class TestController : MonoBehaviour
 
     private Coroutine currentTask;
 
-    private Coroutine trainingSession;
+    private Coroutine trainingSession = null;
 
     void Start()
     {
-        RunDemoTraining();
+        //RunDemoTraining();
+    }
+
+    //private void Update()
+    //{
+    //    if (Input.GetKeyDown(KeyCode.E))
+    //        RunDemoTraining();
+    //}
+
+    private void SetVisuals(bool isVisible)
+    {
+        foreach (VisualFeedback visual in visuals)
+        {
+            visual.SetVisibility(isVisible);
+        }
+        rightController.GetComponent<XRRayInteractor>().enabled = isVisible;
+        leftController.GetComponent<XRRayInteractor>().enabled = isVisible;
     }
 
     public void RunDemoTraining()
     {
         if (trainingSession != null)
             return;
+        SetVisuals(false);
         trainingSession = StartCoroutine(RunPrismTraining(demoTrainingSchedule));
     }
 
@@ -51,6 +69,7 @@ public class TestController : MonoBehaviour
     {
         if (trainingSession != null)
             return;
+        SetVisuals(false);
         trainingSession = StartCoroutine(RunPrismTraining(standardTrainingSchedule));
     }
 
@@ -58,6 +77,7 @@ public class TestController : MonoBehaviour
     {
         if (trainingSession != null)
             return;
+        SetVisuals(false);
         trainingSession = StartCoroutine(RunPrismTraining(mondayTrainingSchedule));
     }
 
@@ -74,6 +94,7 @@ public class TestController : MonoBehaviour
             yield return new WaitForSeconds(timeBetweenSets + .1f);
         }
         trainingSession = null;
+        SetVisuals(true);
     }
 
     private void FillTargetOrder(int numberOffTargets)

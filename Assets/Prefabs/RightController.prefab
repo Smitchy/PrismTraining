@@ -44,7 +44,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d716f1b10189abd4dacc77b8b89a34dd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  giveFeedback: 1
   model: {fileID: 4653885109221021138}
+  activeTime: 0.5
 --- !u!1001 &5241085302640756674
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -58,7 +60,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 588274493876933136, guid: 94f7925a0585b274fbc5fe6b8f9b1f4e, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2281696399307846454, guid: 94f7925a0585b274fbc5fe6b8f9b1f4e, type: 3}
       propertyPath: m_RootOrder

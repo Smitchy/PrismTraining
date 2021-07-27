@@ -34,6 +34,11 @@ public class VisualFeedback : MonoBehaviour
         }
     }
 
+    public void SetVisibility(bool isVisible)
+    {
+        model.SetActive(isVisible);
+    }
+
     IEnumerator TempActive()
     {
         invisible = false;
