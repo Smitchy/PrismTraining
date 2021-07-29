@@ -36,16 +36,57 @@ public class TestController : MonoBehaviour
 
     private Coroutine trainingSession = null;
 
-    void Start()
+    private void Update()
     {
-        //RunDemoTraining();
+        InputDevices.GetDeviceAtXRNode(XRNode.RightHand).TryGetFeatureValue(CommonUsages.primaryButton, out var B_Button);
+        if (B_Button)
+        {
+            StopCurrentSession();
+            SetVisuals(true);
+            ChangeOffSet(Vector3.zero);
+            SetVisualFeedback(false);
+        }
     }
 
-    //private void Update()
-    //{
-    //    if (Input.GetKeyDown(KeyCode.E))
-    //        RunDemoTraining();
-    //}
+    #region Public Functions
+    public void RunDemoTraining()
+    {
+        StopCurrentSession();
+        SetVisuals(false);
+        trainingSession = StartCoroutine(RunPrismTraining(demoTrainingSchedule));
+    }
+
+    public void RunStandardTraining()
+    {
+        StopCurrentSession();
+        SetVisuals(false);
+        trainingSession = StartCoroutine(RunPrismTraining(standardTrainingSchedule));
+    }
+
+    public void RunMondayTraining()
+    {
+        StopCurrentSession();
+        SetVisuals(false);
+        trainingSession = StartCoroutine(RunPrismTraining(mondayTrainingSchedule));
+    }
+
+    #endregion
+
+    #region Private Functions
+
+    private void StopCurrentSession()
+    {
+        if (trainingSession != null)
+        {
+            StopCoroutine(trainingSession);
+            trainingSession = null;
+        }
+        if(currentTask != null)
+        {
+            StopCoroutine(currentTask);
+            currentTask = null;
+        }
+    }
 
     private void SetVisuals(bool isVisible)
     {
@@ -55,46 +96,6 @@ public class TestController : MonoBehaviour
         }
         rightController.GetComponent<XRRayInteractor>().enabled = isVisible;
         leftController.GetComponent<XRRayInteractor>().enabled = isVisible;
-    }
-
-    public void RunDemoTraining()
-    {
-        if (trainingSession != null)
-            return;
-        SetVisuals(false);
-        trainingSession = StartCoroutine(RunPrismTraining(demoTrainingSchedule));
-    }
-
-    public void RunStandardTraining()
-    {
-        if (trainingSession != null)
-            return;
-        SetVisuals(false);
-        trainingSession = StartCoroutine(RunPrismTraining(standardTrainingSchedule));
-    }
-
-    public void RunMondayTraining()
-    {
-        if (trainingSession != null)
-            return;
-        SetVisuals(false);
-        trainingSession = StartCoroutine(RunPrismTraining(mondayTrainingSchedule));
-    }
-
-    IEnumerator RunPrismTraining(List<Vector3> trainingSession)
-    {
-        foreach (Vector3 set in trainingSession)
-        {
-            FillTargetOrder((int)set.x);
-            ChangeOffSet(new Vector3(set.z, 0, 0));
-            SetVisualFeedback(set.y == 1);
-            currentTask = StartCoroutine(RunThroughTargets());
-            yield return new WaitWhile(() => { return currentTask != null; });
-            StartCoroutine(targetController.SetDone(timeBetweenSets));
-            yield return new WaitForSeconds(timeBetweenSets + .1f);
-        }
-        trainingSession = null;
-        SetVisuals(true);
     }
 
     private void FillTargetOrder(int numberOffTargets)
@@ -109,7 +110,7 @@ public class TestController : MonoBehaviour
         Shuffle(targetOrder);
     }
 
-    public void Shuffle<T>(IList<T> list)
+    private void Shuffle<T>(IList<T> list)
     {
         int n = list.Count;
         while (n > 1)
@@ -120,19 +121,6 @@ public class TestController : MonoBehaviour
             list[k] = list[n];
             list[n] = value;
         }
-    }
-
-    IEnumerator RunThroughTargets()
-    {
-        foreach (int target in targetOrder)
-        {
-            targetController.ChangeActiveTarget(target);
-            yield return new WaitUntil(TriggerPressed);
-            targetController.DisableActiveTarget();
-            yield return new WaitForSeconds(.5f);
-            yield return new WaitUntil(ControllerReset);
-        }
-        currentTask = null;
     }
 
     private bool TriggerPressed()
@@ -168,4 +156,38 @@ public class TestController : MonoBehaviour
             item.giveFeedback = feedBack;
         }
     }
+    #endregion
+
+    #region Corutines
+
+    IEnumerator RunPrismTraining(List<Vector3> trainingProgram)
+    {
+        foreach (Vector3 set in trainingProgram)
+        {
+            FillTargetOrder((int)set.x);
+            ChangeOffSet(new Vector3(set.z, 0, 0));
+            SetVisualFeedback(set.y == 1);
+            currentTask = StartCoroutine(RunThroughTargets());
+            yield return new WaitWhile(() => { return currentTask != null; });
+            StartCoroutine(targetController.SetDone(timeBetweenSets));
+            yield return new WaitForSeconds(timeBetweenSets + .1f);
+        }
+        trainingSession = null;
+        SetVisuals(true);
+    }
+
+
+    IEnumerator RunThroughTargets()
+    {
+        foreach (int target in targetOrder)
+        {
+            targetController.ChangeActiveTarget(target);
+            yield return new WaitUntil(TriggerPressed);
+            targetController.DisableActiveTarget();
+            yield return new WaitForSeconds(.5f);
+            yield return new WaitUntil(ControllerReset);
+        }
+        currentTask = null;
+    }
+    #endregion
 }
